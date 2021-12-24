@@ -1,5 +1,6 @@
 package com.example.intentimplicit18102021;
 
+import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.ActivityResultRegistry;
@@ -18,8 +19,10 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -27,11 +30,10 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     Button mBtnGallery, mBtnCamera;
     ImageView mImg;
-    int REQUEST_CODE_CAMERA = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onActivityResult(Boolean result) {
             if (result) {
-                Log.d("BBB", "Allow");
+                requestLauncherOpenCamera.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
             } else {
                 if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -93,4 +95,13 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    private ActivityResultLauncher<Intent> requestLauncherOpenCamera = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null){
+                Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
+                mImg.setImageBitmap(bitmap);
+            }
+        }
+    });
 }
